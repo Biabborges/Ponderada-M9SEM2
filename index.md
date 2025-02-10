@@ -1,4 +1,3 @@
-# **Estratégia e Massa de Testes**
 
 ## **1. Mapa de Business Drivers**
 
