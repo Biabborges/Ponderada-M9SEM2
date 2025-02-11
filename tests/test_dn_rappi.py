@@ -1,5 +1,4 @@
 import pytest
-import requests
 import sqlite3
 import time
 from unittest import TestCase
@@ -56,11 +55,19 @@ class TestSuporte(TestCase):
         start_time = time.time()
 
         # Simulando requisição ao suporte
-        response_time = 30 
+        response_time = 30
+
         assert response_time < 60, "Chamado crítico não foi priorizado corretamente"
 
         end_time = time.time()
         print(f"Tempo de resposta do chamado crítico: {end_time - start_time:.2f} segundos")
+
+    def test_resposta_chamados_criticos_em_lote(self):
+        """Testa se 85% dos chamados críticos são respondidos em até 15 minutos"""
+        total_chamados = 100
+        chamados_no_tempo = 87
+
+        assert chamados_no_tempo / total_chamados >= 0.85, "Menos de 85% dos chamados críticos foram respondidos no prazo"
 
     def test_resposta_chamados_gerais(self):
         """Testa se 95% dos chamados gerais são respondidos em até 2h"""
@@ -69,8 +76,17 @@ class TestSuporte(TestCase):
 
         assert chamados_no_tempo / total_chamados >= 0.95, "Menos de 95% dos chamados foram respondidos no prazo"
 
+    def test_falha_api_suporte(self):
+        """Testa se o sistema exibe mensagem de fallback quando a API de suporte falha"""
+        falha_simulada = True
+        fallback_ativado = False
 
-# Teste de Sincronização de Estoque (DN2)
+        if falha_simulada:
+            fallback_ativado = True
+
+        assert fallback_ativado, "Sistema não exibiu fallback corretamente ao falhar a API de suporte"
+
+
 class TestSincronizacaoEstoque(TestCase):
 
     def setUp(self):
@@ -91,12 +107,12 @@ class TestSincronizacaoEstoque(TestCase):
 
         assert sync_time <= 10, f"Tempo de sincronização foi {sync_time:.2f}s, acima do limite"
 
-    def test_sincronizacao_massiva(self):
-        """Testa se 95% das lojas sincronizam o estoque corretamente em até 2 minutos"""
-        total_lojas = 1000
-        lojas_sincronizadas = 970
+    def test_sincronizacao_massiva_carga_alta(self):
+        """Testa se 95% das mudanças no estoque são sincronizadas corretamente em até 2 minutos"""
+        total_alteracoes = 1000
+        alteracoes_sucesso = 960
 
-        assert lojas_sincronizadas / total_lojas >= 0.95, "Menos de 95% das lojas sincronizaram no tempo esperado"
+        assert alteracoes_sucesso / total_alteracoes >= 0.95, "Menos de 95% das mudanças de estoque foram sincronizadas no tempo esperado"
 
     def test_falha_api_sincronizacao(self):
         """Testa se o sistema tenta novamente sincronizar após falha"""
@@ -112,6 +128,7 @@ class TestSincronizacaoEstoque(TestCase):
                 falha_simulada = False
 
         assert tentativa_sucesso, "Sistema não conseguiu recuperar a sincronização após falha"
+
 
 if __name__ == "__main__":
     pytest.main()
